@@ -1,5 +1,5 @@
-import { api, movieSource, storageKey } from './demo-api.js';
-import { BattleOverlay } from './battle-overlay.js';
+import { api, movieSource, storageKey } from './demo-api.js?v=4007e9b54c82';
+import { BattleOverlay } from './battle-overlay.js?v=4007e9b54c82';
 const $ = id => document.getElementById(id);
 const video = $('battle-video');
 const overlay = new BattleOverlay(video, $('battle-overlay'), $('battle-scene'));

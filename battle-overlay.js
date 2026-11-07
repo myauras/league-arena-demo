@@ -1,4 +1,4 @@
-import { BattleImpact } from './battle-impact.js';
+import { BattleImpact } from './battle-impact.js?v=4007e9b54c82';
 const STRIDE = 11;
 const COLUMNS = ['headX', 'headY', 'footX', 'footY', 'health', 'shield', 'status', 'q', 'w', 'e', 'r'];
 const clamp = (n, low, high) => Math.max(low, Math.min(high, n));

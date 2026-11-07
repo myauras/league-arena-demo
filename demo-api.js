@@ -11,18 +11,29 @@ const assetUrl = path => {
 let catalogPromise, databasePromise;
 let movieUrl, moviePath, movieTask;
 const checkedClips = new Map();
+const rangeSupport = new Map();
 const fail = (status, code, message) => Object.assign(new Error(message), { status, code });
 const clone = value => JSON.parse(JSON.stringify(value));
 
-// Some static hosts ignore Range and expose a zero-length seekable range.
-// Load one immutable MP4 into a verified Blob so seek/reload works on those hosts.
+// Use the browser's progressive player on Range-capable hosts (including GitHub).
+// Retain the verified Blob fallback for hosts that cannot serve seekable media.
 export async function movieSource(path) {
+  const c = await catalog(), clip = c.clips.find(x => x.url === path || x.legacyUrl === path);
+  if (!clip) throw new Error('找不到此回合的影片。');
+  path = clip.url; // Old pending tickets keep their result and use the smaller equivalent movie.
+  if (!rangeSupport.has(path)) {
+    const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15000);
+    try {
+      const response = await fetch(path, { method: 'HEAD', signal: controller.signal, cache: 'no-store' });
+      if (!response.ok) throw new Error('影片暫時無法播放，請重試同一回合。');
+      rangeSupport.set(path, response.headers.get('accept-ranges')?.toLowerCase() === 'bytes');
+    } finally { clearTimeout(timer); }
+  }
+  if (rangeSupport.get(path)) return path;
   if (movieUrl && moviePath === path) return movieUrl;
   if (movieTask?.path === path) return movieTask.promise;
   const task = { path };
   task.promise = (async () => {
-    const c = await catalog(), clip = c.clips.find(x => x.url === path);
-    if (!clip) throw new Error('找不到此回合的影片。');
     const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 60000);
     try {
       // An interrupted request must not reuse an incomplete cached response.
@@ -51,6 +62,7 @@ async function catalog() {
     // Catalog paths are relative to this export, including on GitHub project Pages.
     for (const hero of c.heroes) hero.portrait = assetUrl(hero.portrait);
     for (const clip of c.clips) for (const key of ['url', 'posterUrl', 'timelineUrl']) clip[key] = assetUrl(clip[key]);
+    for (const clip of c.clips) if (clip.legacyUrl) clip.legacyUrl = assetUrl(clip.legacyUrl);
     return c;
   }).catch(e => { catalogPromise = null; throw e; });
   return catalogPromise;
@@ -102,6 +114,7 @@ async function checkClip(clip) {
         fetch(clip.timelineUrl, { signal: controller.signal })
       ]);
       if (!movie.ok || !sidecar.ok || !movie.headers.get('content-type')?.startsWith('video/')) throw new Error('影片暫時無法播放，尚未扣除點數。');
+      rangeSupport.set(clip.url, movie.headers.get('accept-ranges')?.toLowerCase() === 'bytes');
       const raw = await sidecar.arrayBuffer();
       const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', raw))].map(b => b.toString(16).padStart(2, '0')).join('');
       if (hash !== clip.timelineSha256) throw new Error('戰鬥資料驗證失敗，尚未扣除點數。');
