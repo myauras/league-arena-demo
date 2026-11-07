@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0c1216"><title>英雄競技場 · 公開測試版</title>
+  <link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./battle-overlay.css"><link rel="stylesheet" href="./portrait.css"><script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="./" aria-label="英雄競技場首頁"><strong>英雄競技場</strong><small>LEAGUE ARENA</small></a><div class="wallet" aria-label="示範點數餘額" title="測試點數保存在此瀏覽器，餘額用完可補充"><span class="coin" aria-hidden="true">G</span><span style="font-size:10px;color:#b5a274">測試</span><strong id="balance">—</strong></div></header>
+  <main>
+    <div class="game-grid">
+      <section class="arena-column" aria-label="戰鬥舞台">
+        <div class="stage">
+          <div class="battle-scene" id="battle-scene">
+            <video id="battle-video" playsinline muted preload="metadata" aria-label="本回合戰鬥影片"></video>
+            <div id="battle-overlay" class="battle-overlay" hidden aria-label="英雄血量與下注標記"></div>
+            <div id="battle-flash" class="battle-flash" aria-hidden="true"></div>
+          </div>
+          <div class="stage-shade"></div>
+          <div class="stage-top"><span class="stage-tag" id="wager-label">THE ARENA</span><span class="round-state"><span id="state-label">準備中</span><span id="round-label">五位英雄 · 自由混戰</span></span></div>
+          <div id="battle-feedback" class="battle-feedback" hidden></div>
+          <div class="stage-message selection-prompt" id="stage-message"><h2 id="stage-title">選擇你的英雄</h2><p id="stage-copy" hidden></p><button id="media-retry" class="secondary" hidden>繼續播放</button></div>
+          <div class="result-panel" id="result-panel" hidden aria-live="polite"><p class="eyebrow">ROUND COMPLETE</p><h2 id="result-title"></h2><p id="result-copy"></p><div id="finish-order" class="finish-order"></div></div>
+        </div>
+        <div class="arena-note"><span>01</span> 選擇英雄 <i></i><span>02</span> 觀看對戰 <i></i><span>03</span> 揭曉結果</div>
+      </section>
+      <aside class="bet-panel" aria-label="回合設定">
+        <div class="panel-title"><span class="eyebrow">YOUR PREDICTION</span><h2>選定你的勝局</h2></div>
+        <div id="bet-types" class="bet-types" role="group" aria-label="選擇玩法"></div>
+        <p id="bet-hint" class="hint">選出最後站著的英雄</p>
+        <div class="hero-section"><span id="selection-hint" class="visually-hidden">選 1 位冠軍</span><div id="heroes" class="hero-grid" role="group" aria-label="選擇英雄" aria-describedby="bet-hint"></div></div>
+        <div class="picked-summary"><span>本回合選擇</span><strong id="picked-names">尚未選擇英雄</strong></div>
+        <div class="section-heading compact"><h3>投入點數</h3><span>DEMO CREDITS</span></div><div id="stakes" class="stakes" role="group" aria-label="投入點數"></div>
+        <div class="return-summary"><span>命中時總返還 <small>含投入點數</small></span><strong id="potential-return">500</strong></div>
+        <div class="video-controls"><button id="pause-button" aria-label="暫停或繼續影片" disabled>暫停</button><div class="progress"><div id="progress-fill"></div><input id="seek-bar" type="range" min="0" max="1000" value="0" aria-label="戰鬥影片播放進度" disabled></div><span id="time-label">00:00</span><button id="sound-button" aria-label="切換影片音效">開啟音效</button></div>
+        <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+        <button id="start-button" class="primary" disabled><span>選擇英雄以開始</span><b>↗</b></button>
+        <button id="next-button" class="primary" hidden>下一回合 <b>↗</b></button>
+        <p class="demo-note">本頁使用示範點數，不涉及實際金額。</p>
+        <div class="rules"><span>競技場規則</span><p>五位英雄自由交戰。依最終名次判定結果，英雄選擇不會影響戰鬥走向。</p></div>
+      </aside>
+    </div>
+    <footer><span>AURA / LEAGUE ARENA</span><span>每一場交鋒，都有自己的結局。</span></footer>
+  </main>
+</body>
+</html>

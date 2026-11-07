@@ -1,0 +1,44 @@
+.battle-scene{position:absolute;inset:0;transform-origin:center;will-change:transform}
+.battle-scene video{object-fit:contain;transition:filter .5s ease}
+.battle-scene video.wager-eliminated{filter:grayscale(.88) saturate(.25) brightness(.8)}
+.battle-overlay,.battle-flash{position:absolute;inset:0;pointer-events:none}
+.battle-overlay{overflow:hidden;font-variant-numeric:tabular-nums}
+.battle-flash{background:radial-gradient(ellipse,#fff8d5,transparent 85%);opacity:0;mix-blend-mode:screen}
+.health-links{position:absolute;width:100%;height:100%;overflow:visible}
+.health-links line{stroke:#b1c3c7;stroke-width:1;opacity:.7}
+.health-links .wager-link{stroke:#ffe2a2;stroke-width:1.3}
+.hero-health{position:absolute;transform:translate(-50%,-100%);text-align:center;color:#edf1eb;line-height:1.1;text-shadow:0 1px 3px #000,0 0 4px #000;font-family:Arial,'Microsoft JhengHei',sans-serif}
+.health-name{display:block;font-size:10px;white-space:nowrap;margin-bottom:3px}
+.health-track{position:relative;height:7px;background:#081118eb;border:1px solid #526162;box-shadow:0 1px 4px #000;overflow:hidden}
+.health-fill{display:block;height:100%;background:linear-gradient(#9ecbbb,#438b7b)}
+.shield-fill{position:absolute;right:0;bottom:0;height:2px;background:#c2f7ff;box-shadow:0 0 4px #8febff}
+.health-status{display:block;min-height:10px;color:#bdeaff;font-size:9px;margin-top:2px}
+.health-status:empty{display:none}
+.hero-health.wagered{z-index:2}
+.wagered .health-name{color:#ffe5a7;font-weight:700;font-size:11px;letter-spacing:.3px}
+.wagered .health-track{height:5px;border-color:#f5d488;box-shadow:0 0 0 1px #352614,0 0 7px #e8b45250}
+.wagered .health-fill{background:linear-gradient(#ffea9b,#c99638)}
+.wager-arrow{position:absolute;z-index:3;transform:translate(-50%,-100%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #ffe3a0;filter:drop-shadow(0 1px 2px #000)}
+.battle-feedback{position:absolute;bottom:47px;left:50%;transform:translateX(-50%);padding:6px 14px;border:1px solid #e0bd7155;background:#101b20d9;color:#ffe3a0;font-size:12px;white-space:nowrap;pointer-events:none;letter-spacing:1px}
+.card-vitals{display:flex;flex-direction:column;gap:5px;width:calc(100% - 12px);margin-top:10px}
+.card-health-track{height:3px;background:#071214;overflow:hidden}
+.card-health-fill{display:block;height:100%;background:#78bba7}
+.selected .card-health-fill{background:#e3c37a}
+.card-health-value{font-size:9px;color:#a4bab9;font-variant-numeric:tabular-nums}
+.hero-card:disabled{opacity:1;cursor:default}
+.hero-card.selected:disabled{border-color:#f0ce82;box-shadow:inset 0 0 14px #d9aa4818}
+.hero-card.selected .card-health-value{color:#ffe3a5}
+.hero-card[data-eliminated=true] img{filter:grayscale(1);opacity:.5}
+.hero-card[data-eliminated=true] .card-health-value{color:#a49b91}
+.progress{position:relative;cursor:pointer}
+.progress input{position:absolute;inset:-12px 0;width:100%;height:28px;margin:0;opacity:0;cursor:pointer}
+.progress:focus-within{outline:2px solid var(--gold);outline-offset:3px}
+.stage-message.playback-paused{inset:auto 12px 40px auto;display:flex;flex-direction:row;gap:10px;padding:6px 9px;background:#08131cdb;border:1px solid #53606455}
+.stage-message.playback-paused .ring-emblem,.stage-message.playback-paused p{display:none}
+.stage-message.playback-paused h2{font-size:10px;letter-spacing:1px;margin:0}
+.stage-message.playback-paused button{padding:5px 8px;font-size:10px}
+@media(max-width:500px){.health-name{font-size:8px;margin-bottom:2px}.wagered .health-name{font-size:9px}.health-track{height:4px}.wagered .health-track{height:4px}.health-status{font-size:8px}.card-health-value{font-size:8px}.battle-feedback{font-size:10px;bottom:36px;padding:4px 8px}.stage-top{top:8px}.stage-tag{max-width:60%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}}
+@media(prefers-reduced-motion:reduce){.battle-scene{will-change:auto}.battle-scene video{transition:none}.battle-flash{display:none}}
+
+.battle-impact{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.battle-impact{display:none}}
