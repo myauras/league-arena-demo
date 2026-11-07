@@ -18,7 +18,7 @@ const clone = value => JSON.parse(JSON.stringify(value));
 // Use the browser's progressive player on Range-capable hosts (including GitHub).
 // Retain the verified Blob fallback for hosts that cannot serve seekable media.
 export async function movieSource(path) {
-  const c = await catalog(), clip = c.clips.find(x => x.url === path || x.legacyUrl === path);
+  const c = await catalog(), clip = [...c.clips, ...(c.legacyClips || [])].find(x => x.url === path || x.legacyUrl === path);
   if (!clip) throw new Error('找不到此回合的影片。');
   path = clip.url; // Old pending tickets keep their result and use the smaller equivalent movie.
   if (!rangeSupport.has(path)) {
@@ -61,8 +61,10 @@ async function catalog() {
     if (c.schemaVersion !== 1 || !c.clips?.length || c.heroes?.length !== 5 || !c.betTypes?.length) throw new Error('影片庫格式不正確。');
     // Catalog paths are relative to this export, including on GitHub project Pages.
     for (const hero of c.heroes) hero.portrait = assetUrl(hero.portrait);
-    for (const clip of c.clips) for (const key of ['url', 'posterUrl', 'timelineUrl']) clip[key] = assetUrl(clip[key]);
-    for (const clip of c.clips) if (clip.legacyUrl) clip.legacyUrl = assetUrl(clip.legacyUrl);
+    for (const clip of [...c.clips, ...(c.legacyClips || [])]) {
+      for (const key of ['url', 'posterUrl', 'timelineUrl']) clip[key] = assetUrl(clip[key]);
+      if (clip.legacyUrl) clip.legacyUrl = assetUrl(clip.legacyUrl);
+    }
     return c;
   }).catch(e => { catalogPromise = null; throw e; });
   return catalogPromise;
