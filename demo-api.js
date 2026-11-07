@@ -25,7 +25,8 @@ export async function movieSource(path) {
     if (!clip) throw new Error('找不到此回合的影片。');
     const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 60000);
     try {
-      const response = await fetch(path, { signal: controller.signal });
+      // An interrupted request must not reuse an incomplete cached response.
+      const response = await fetch(path, { signal: controller.signal, cache: 'no-store' });
       if (!response.ok) throw new Error('影片下載中斷，請重試播放同一回合。');
       const bytes = await response.arrayBuffer();
       const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(b => b.toString(16).padStart(2, '0')).join('');
@@ -97,7 +98,7 @@ async function checkClip(clip) {
     const controller = new AbortController(), timeout = setTimeout(() => controller.abort(), 20000);
     try {
       const [movie, sidecar] = await Promise.all([
-        fetch(clip.url, { method: 'HEAD', signal: controller.signal }),
+        fetch(clip.url, { method: 'HEAD', signal: controller.signal, cache: 'no-store' }),
         fetch(clip.timelineUrl, { signal: controller.signal })
       ]);
       if (!movie.ok || !sidecar.ok || !movie.headers.get('content-type')?.startsWith('video/')) throw new Error('影片暫時無法播放，尚未扣除點數。');
