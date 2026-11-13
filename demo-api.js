@@ -131,6 +131,11 @@ function validate(body, c) {
   if (![100, 200, 500].includes(body.stake)) throw fail(400, 'invalid_stake', '請選擇有效的投注額。');
   return bet;
 }
+function ticketForCatalog(ticket, c) {
+  if ([...c.clips, ...(c.legacyClips || [])].some(clip => clip.clipId === ticket.playback.clipId && clip.contentVersion === ticket.playback.contentVersion)) return ticket;
+  // Retiring media never changes the already committed result, balance or stored ticket.
+  return { ...ticket, playback: { ...ticket.playback, retired: true } };
+}
 export async function api(path, body) {
   const c = await catalog();
   if (path === '/api/bootstrap' && body === undefined) return transact(s => {
@@ -138,14 +143,14 @@ export async function api(path, body) {
     if (!s.active && s.balance < 100) s.balance = 10000;
     return { schemaVersion: 1, balance: s.balance, heroes: c.heroes, betTypes: c.betTypes, stakes: [100, 200, 500],
       library: { clips: c.clips.length, contentVersion: c.contentVersion, posterUrl: c.clips[0].posterUrl },
-      activeRound: s.active ? s.rounds[s.active].ticket : null };
+      activeRound: s.active ? ticketForCatalog(s.rounds[s.active].ticket, c) : null };
   });
   if (path === '/api/rounds' && body !== undefined) {
     const bet = validate(body, c), signature = JSON.stringify([body.betType, body.picks, body.stake]);
     const old = await transact(s => s.rounds[body.requestId] || null);
     if (old) {
       if (old.signature !== signature) throw fail(409, 'idempotency_conflict', '同一請求編號不可更換投注內容。');
-      return old.ticket;
+      return ticketForCatalog(old.ticket, c);
     }
     // Decide among available complete outcomes independently of the selected heroes.
     const orders = [...new Set(c.clips.map(clip => JSON.stringify(clip.finishOrder)))];
@@ -155,7 +160,7 @@ export async function api(path, body) {
       const existing = s.rounds[body.requestId];
       if (existing) {
         if (existing.signature !== signature) throw fail(409, 'idempotency_conflict', '同一請求編號不可更換投注內容。');
-        return existing.ticket;
+        return ticketForCatalog(existing.ticket, c);
       }
       if (s.active) throw fail(409, 'round_pending', '請先完成目前回合，或重新整理以續播。');
       if (s.balance < body.stake) throw fail(409, 'insufficient_balance', '示範點數不足。');
@@ -178,7 +183,7 @@ export async function api(path, body) {
       if (s.active === entry.ticket.requestId) s.active = null;
       return { roundId: match[1], viewed: true, balance: s.balance };
     }
-    if (!match[2] && body === undefined) return entry.ticket;
+    if (!match[2] && body === undefined) return ticketForCatalog(entry.ticket, c);
     throw fail(405, 'method', '不支援此操作。');
   });
   throw fail(404, 'not_found', '找不到此服務。');

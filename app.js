@@ -1,5 +1,5 @@
-import { api, movieSource, storageKey } from './demo-api.js?v=74ae1d1539ca';
-import { BattleOverlay } from './battle-overlay.js?v=74ae1d1539ca';
+import { api, movieSource, storageKey } from './demo-api.js?v=b4bfd5bf11df';
+import { BattleOverlay } from './battle-overlay.js?v=b4bfd5bf11df';
 const $ = id => document.getElementById(id);
 const video = $('battle-video');
 const overlay = new BattleOverlay(video, $('battle-overlay'), $('battle-scene'));
@@ -90,6 +90,12 @@ async function loadRound(result) {
   text('feedback', ''); phase = 'loading'; render();
   resumeAt = Number(storage.get(`arena.position.${round.roundId}`)) || 0;
   video.pause();
+  if (round.playback.retired) {
+    resumeAt = 0; legacyTimeline = false; overlay.clear();
+    video.removeAttribute('src'); video.poster = data.library.posterUrl; video.load();
+    complete(); text('feedback', '影片已更新，本回合結果與點數已保留。可直接開始下一局。');
+    return;
+  }
   try {
     const hasTimeline = await overlay.load(round.playback, picks, betType);
     legacyTimeline = !hasTimeline;
@@ -120,17 +126,17 @@ $('pause-button').onclick = () => { overlay.unlockAudio(); if (!round) return; i
 $('sound-button').onclick = () => { overlay.unlockAudio(); video.muted = !video.muted; storage.set('arena.muted', video.muted); text('sound-button', video.muted ? '開啟音效' : '靜音'); };
 $('seek-bar').oninput = () => { if (round && Number.isFinite(video.duration)) video.currentTime = video.duration * Number($('seek-bar').value) / 1000; };
 video.addEventListener('loadedmetadata', () => { if (resumeAt > 0 && Number.isFinite(video.duration)) { video.currentTime = Math.min(resumeAt, Math.max(0, video.duration - .6)); resumeAt = 0; } });
-video.addEventListener('playing', () => { if (round) { phase = 'playing'; text('feedback', legacyTimeline ? '這是更新前的回合，尚無同步血條；下一回合會使用新版影片。' : ''); render(); } });
+video.addEventListener('playing', () => { if (round && !round.playback.retired) { phase = 'playing'; text('feedback', legacyTimeline ? '這是更新前的回合，尚無同步血條；下一回合會使用新版影片。' : ''); render(); } });
 video.addEventListener('pause', () => { if (round && !video.ended && !['result', 'acknowledging', 'mediaError', 'loading'].includes(phase)) { phase = 'paused'; render(); } });
 video.addEventListener('waiting', () => { if (round && !['result', 'acknowledging', 'mediaError'].includes(phase)) { phase = 'buffering'; render(); } });
-video.addEventListener('error', () => { if (round) { phase = 'mediaError'; render(); } });
+video.addEventListener('error', () => { if (round && !round.playback.retired) { phase = 'mediaError'; render(); } });
 video.addEventListener('ended', complete);
 video.addEventListener('timeupdate', () => {
   if (phase === 'playing') text('state-label', overlay.countingDown ? '戰鬥倒數' : '戰鬥進行中');
   const seconds = Math.floor(video.currentTime || 0); text('time-label', `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`);
   $('progress-fill').style.width = `${Number.isFinite(video.duration) && video.duration > 0 ? video.currentTime / video.duration * 100 : 0}%`;
   $('seek-bar').value = Number.isFinite(video.duration) && video.duration > 0 ? String(video.currentTime / video.duration * 1000) : '0';
-  if (round) storage.set(`arena.position.${round.roundId}`, video.currentTime);
+  if (round && !round.playback.retired) storage.set(`arena.position.${round.roundId}`, video.currentTime);
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden && round && !video.paused) video.pause(); });
 boot();
